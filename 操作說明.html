@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>家用庫存管理 App 操作說明</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #5f6b7a;
+      --line: #d7dfea;
+      --bg: #f4f6f8;
+      --panel: #ffffff;
+      --blue: #1f6feb;
+      --green: #0c7a43;
+      --red: #b42318;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Microsoft JhengHei", "Noto Sans TC", "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.68;
+    }
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+      padding: 28px 22px 20px;
+    }
+    main {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      line-height: 1.25;
+    }
+    h2 {
+      margin: 28px 0 12px;
+      font-size: 21px;
+      border-left: 5px solid var(--blue);
+      padding-left: 10px;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+    }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 12px; padding-left: 24px; }
+    li { margin: 4px 0; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 12px 0;
+      break-inside: avoid;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .tag {
+      display: inline-block;
+      border-radius: 6px;
+      background: #eef1f5;
+      color: #354052;
+      font-weight: 800;
+      padding: 2px 8px;
+      margin: 0 2px;
+      white-space: nowrap;
+    }
+    .note {
+      border-left: 4px solid var(--green);
+      background: #ecf8f1;
+      padding: 10px 12px;
+      border-radius: 6px;
+      color: #244b35;
+      margin-top: 10px;
+    }
+    .warn {
+      border-left: 4px solid var(--red);
+      background: #fff1f0;
+      padding: 10px 12px;
+      border-radius: 6px;
+      color: #6b2018;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #eef1f5; }
+    tr:last-child td { border-bottom: 0; }
+    code {
+      background: #eef1f5;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: Consolas, monospace;
+    }
+    footer {
+      color: var(--muted);
+      padding: 20px 18px 36px;
+      text-align: center;
+      font-size: 13px;
+    }
+    @media print {
+      body { background: #fff; }
+      header { padding-top: 0; }
+      main { padding: 10px 0; }
+      .card { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>家用庫存管理 App 操作說明</h1>
+    <p>本 App 用於記錄家中物品的購買、領用、庫存彙總、拍照比價、備份與匯入。</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>主畫面</h2>
+      <p>主畫面主要按鈕為：</p>
+      <p><span class="tag">新增</span><span class="tag">購買</span><span class="tag">領用</span><span class="tag">庫存</span></p>
+      <p>右上方 <span class="tag">拍照比價</span> 可建立與查詢比價資料。</p>
+      <p>工具按鈕：</p>
+      <p><span class="tag">清除未用照片</span><span class="tag">備份</span><span class="tag">匯入</span></p>
+      <p>搜尋框可搜尋物品名稱、位置、備註。</p>
+    </section>
+
+    <section>
+      <h2>新增購買</h2>
+      <div class="card">
+        <ol>
+          <li>在主畫面按 <span class="tag">新增</span>。</li>
+          <li>按圖片區塊可 <span class="tag">開啟相機拍照</span>。</li>
+          <li>在「物品名稱」label 右側按 <span class="tag">載入圖片</span> 可從手機相簿選圖。</li>
+          <li>輸入物品名稱、購買日期、有效日期、購買數量、單位、幣別、單價、購買地點、存放位置與備註。</li>
+          <li><span class="tag">小計</span> 會依購買數量與單價自動計算。</li>
+          <li>按表單上方 <span class="tag">存檔</span> 完成。</li>
+        </ol>
+        <div class="note">購買數量預設為 1。新增購買後，庫存會自動以「購買數量 - 已領用數量」彙總。</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>庫存</h2>
+      <div class="card">
+        <p>庫存頁不是獨立資料表，而是由購買資料即時計算。</p>
+        <ul>
+          <li>只統計尚未使用完畢的購買資料。</li>
+          <li>庫存量 = 購買數量 - 已領用數量。</li>
+          <li>同名物品會彙總顯示。</li>
+        </ul>
+        <p>每筆庫存資料下方按鈕：</p>
+        <ul>
+          <li><span class="tag">新增</span>：帶入此物品資料，快速新增同類物品購買。</li>
+          <li><span class="tag">刪除</span>：刪除此物品相關購買與領用記錄。</li>
+          <li><span class="tag">查詢</span>：只查詢此物品的購買與領用記錄，不會把名稱寫進搜尋框。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>購買記錄</h2>
+      <div class="card">
+        <p>按 <span class="tag">購買</span> 可查看購買記錄。排序依使用完畢否、物品名稱、購買單號、購買日期。</p>
+        <p>資料會顯示購買日期、保存期限、數量、已領數量、幣別、單價、小計、購買地點、位置與備註。</p>
+        <ul>
+          <li><span class="tag">領用</span>：針對該筆購買資料新增領用。</li>
+          <li><span class="tag">修改</span>：修改該筆購買資料。</li>
+          <li><span class="tag">刪除</span>：刪除該筆購買資料；若已有領用資料，刪除按鈕不顯示。</li>
+        </ul>
+        <div class="note">使用完畢的購買資料不會顯示領用按鈕。</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>領用記錄</h2>
+      <div class="card">
+        <ol>
+          <li>在購買記錄中按 <span class="tag">領用</span>。</li>
+          <li>確認可領用數量。</li>
+          <li>輸入領用日期、領用數量、備註。</li>
+          <li>按 <span class="tag">存檔</span>。</li>
+        </ol>
+        <p>領用後會回寫購買資料的已領用數量。當已領用數量等於購買數量時，該筆購買資料會標記為使用完畢。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>拍照比價</h2>
+      <div class="card">
+        <ol>
+          <li>在主畫面按 <span class="tag">拍照比價</span>。</li>
+          <li>按圖片區塊可開啟相機拍照。</li>
+          <li>在「物品名稱」label 右側按 <span class="tag">載入圖片</span> 可從手機相簿選圖。</li>
+          <li>輸入物品名稱。</li>
+          <li>按上方 <span class="tag">存檔</span> 建立比價主檔；成功時會以 toast 提示，不跳視窗。</li>
+        </ol>
+        <p>比價主檔會顯示照片、物品名稱、日期與右側明細筆數。</p>
+        <p>比價主檔按鈕：</p>
+        <ul>
+          <li><span class="tag">新增</span>：新增比價明細。</li>
+          <li><span class="tag">刪除</span>：刪除比價主檔與其明細。</li>
+          <li><span class="tag">查詢</span>：查看比價明細。</li>
+          <li><span class="tag">分享</span>：將圖片分享給 Google / Google Lens 等工具進行圖片比價。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>比價明細</h2>
+      <div class="card">
+        <h3>新增比價明細</h3>
+        <ol>
+          <li>在比價主檔按 <span class="tag">新增</span>。</li>
+          <li>輸入日期、商家、幣別、單價、備註。</li>
+          <li>按 <span class="tag">存檔</span>。</li>
+        </ol>
+        <p>新增比價明細時，購買否預設為 N，不需手動輸入。</p>
+
+        <h3>查詢比價明細</h3>
+        <ul>
+          <li><span class="tag">刪除</span>：刪除該筆比價明細。</li>
+          <li><span class="tag">購買</span>：將該筆比價明細新增到購買檔。</li>
+        </ul>
+        <p>按 <span class="tag">購買</span> 時，商家會帶入購買地點，日期、幣別、單價也會帶入購買資料。完成後該筆比價明細會顯示紅字 <code>購買否：Y</code>。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>照片儲存與清理</h2>
+      <div class="card">
+        <p>App 會將拍照或載入的圖片複製到 App 內部資料夾：</p>
+        <p><code>FileSystem.documentDirectory/item-photos/</code></p>
+        <p>手機一般相簿或檔案管理器不一定看得到這個資料夾。</p>
+        <p>刪除購買資料或比價主檔時，App 會嘗試刪除不再被資料庫引用的照片。</p>
+        <p>按 <span class="tag">清除未用照片</span> 可掃描並刪除沒有被購買資料或比價主檔引用的照片。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>備份與匯入</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>備份</h3>
+          <p>按 <span class="tag">備份</span> 會產生 JSON 備份檔，並開啟手機分享功能。</p>
+          <p>備份內容包含購買資料、領用資料、比價主檔、比價明細，以及 App 內部被引用照片的 base64 內容。</p>
+        </div>
+        <div class="card">
+          <h3>匯入</h3>
+          <p>按 <span class="tag">匯入</span> 可選擇備份 JSON 檔。</p>
+          <p>匯入會還原資料與照片到目前手機。</p>
+          <div class="warn">匯入會覆蓋目前手機內的購買、領用、比價資料與照片引用，請先確認已備份目前資料。</div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>鍵盤與表單操作</h2>
+      <div class="card">
+        <p>在新增購買、領用、比價明細等表單中，輸入備註時可保持鍵盤開啟並滑動表單，避免備註欄位被鍵盤擋住。</p>
+        <p>備註欄位已保留底部空間，讓文字框底線完整顯示。</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>常見注意事項</h2>
+      <table>
+        <thead>
+          <tr><th>情況</th><th>說明</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>照片在手機相簿找不到</td>
+            <td>App 主要使用內部資料夾保存可顯示照片，手機相簿不一定看得到。</td>
+          </tr>
+          <tr>
+            <td>備份 JSON 很大</td>
+            <td>因為照片會以 base64 存入 JSON，照片越多檔案越大。</td>
+          </tr>
+          <tr>
+            <td>搜尋後庫存數量變少</td>
+            <td>庫存頁會先依搜尋條件過濾購買資料，再彙總庫存。</td>
+          </tr>
+          <tr>
+            <td>iPhone 沒有離開按鈕</td>
+            <td>iOS 不允許 App 自行關閉，請用 iPhone 系統手勢回主畫面。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>家用庫存管理 App 操作說明</footer>
+</body>
+</html>

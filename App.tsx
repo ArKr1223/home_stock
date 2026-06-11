@@ -602,7 +602,7 @@ export default function App() {
     }
   };
 
-  const loadComparePhotoFromLibrary = async () => {
+  const loadPhotoFromLibrary = async (target: 'purchase' | 'compare') => {
     try {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
@@ -620,7 +620,8 @@ export default function App() {
         Alert.alert('圖片路徑無法顯示', '手機回傳的圖片路徑無法直接顯示，請改用拍照。');
         return;
       }
-      setComparePhotoUri(uri);
+      if (target === 'purchase') setPurchaseForm((prev) => ({ ...prev, photoUri: uri }));
+      if (target === 'compare') setComparePhotoUri(uri);
     } catch (error) {
       Alert.alert('載入圖片失敗', error instanceof Error ? error.message : String(error));
     }
@@ -1229,7 +1230,8 @@ export default function App() {
                   `購買日期：${row.purchaseDate}`,
                   row.expiryDate ? `保存期限：${row.expiryDate}` : '',
                   `數量：${qtyText(row.quantity)} ${row.unit} / 已領：${qtyText(row.issueQuantity)}`,
-                  `幣別：${row.currency || 'TWD'} / 單價：${money(row.unitPrice)} / 金額：${money(row.amount)}`,
+                  `幣別：${row.currency || 'TWD'} / 單價：${money(row.unitPrice)}`,
+                  `小計：${money(row.amount)}`,
                   row.purchasePlace ? `購買地點：${row.purchasePlace}` : '',
                   row.location ? `位置：${row.location}` : '',
                   row.notes ? `備註：${row.notes}` : '',
@@ -1306,7 +1308,17 @@ export default function App() {
               {modalMode === 'purchase' && (
                 <>
                   <PhotoPicker uri={purchaseForm.photoUri} label="開啟相機拍照" onPress={() => takePhoto('purchase')} />
-                  <Field label="物品名稱" size="small" value={purchaseForm.name} onChangeText={(name) => setPurchaseForm((prev) => ({ ...prev, name }))} />
+                  <Field
+                    label="物品名稱"
+                    size="small"
+                    value={purchaseForm.name}
+                    onChangeText={(name) => setPurchaseForm((prev) => ({ ...prev, name }))}
+                    labelAction={
+                      <Pressable style={styles.loadImageButton} onPress={() => loadPhotoFromLibrary('purchase')}>
+                        <Text style={styles.loadImageButtonText}>載入圖片</Text>
+                      </Pressable>
+                    }
+                  />
                   <View style={styles.formRow}>
                     <View style={styles.formColumn}>
                       <Field label="購買日期" size="small" value={purchaseForm.purchaseDate} onChangeText={(purchaseDate) => setPurchaseForm((prev) => ({ ...prev, purchaseDate }))} />
@@ -1362,7 +1374,7 @@ export default function App() {
                     value={compareName}
                     onChangeText={setCompareName}
                     labelAction={
-                      <Pressable style={styles.loadImageButton} onPress={loadComparePhotoFromLibrary}>
+                      <Pressable style={styles.loadImageButton} onPress={() => loadPhotoFromLibrary('compare')}>
                         <Text style={styles.loadImageButtonText}>載入圖片</Text>
                       </Pressable>
                     }
