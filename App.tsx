@@ -128,6 +128,7 @@ const shortDate = () => new Date().toISOString().slice(2, 10);
 const nowText = () => new Date().toISOString();
 const trimText = (value: string) => value.trim();
 const canUseImageUri = (uri: string | null | undefined): uri is string => !!uri && !uri.startsWith('ph://');
+const DEFAULT_CURRENCY = '台幣';
 const money = (value: number) => value.toLocaleString('zh-TW', { maximumFractionDigits: 2 });
 const qtyText = (value: number) => value.toLocaleString('zh-TW', { maximumFractionDigits: 3 });
 
@@ -138,7 +139,7 @@ const emptyPurchaseForm = (): PurchaseForm => ({
   expiryDate: '',
   quantity: '1',
   unit: '',
-  currency: 'TWD',
+  currency: DEFAULT_CURRENCY,
   unitPrice: '',
   purchasePlace: '',
   location: '',
@@ -158,7 +159,7 @@ const emptyPriceDetailForm = (compareNo: string): PriceDetailForm => ({
   compareNo,
   detailDate: shortDate(),
   merchant: '',
-  currency: 'TWD',
+  currency: DEFAULT_CURRENCY,
   unitPrice: '',
   purchased: 'N',
   notes: '',
@@ -294,7 +295,7 @@ const mapPurchase = (row: any): PurchaseRow => ({
   expiryDate: row.expiry_date ?? '',
   quantity: Number(row.quantity),
   unit: row.unit ?? '',
-  currency: row.currency ?? 'TWD',
+  currency: row.currency ?? DEFAULT_CURRENCY,
   unitPrice: Number(row.unit_price ?? 0),
   amount: Number(row.amount ?? 0),
   purchasePlace: row.purchase_place ?? '',
@@ -327,7 +328,7 @@ const mapPriceDetail = (row: any): PriceDetailRow => ({
   compareNo: row.compare_no,
   merchant: row.merchant,
   detailDate: row.detail_date ?? '',
-  currency: row.currency ?? 'TWD',
+  currency: row.currency ?? DEFAULT_CURRENCY,
   unitPrice: Number(row.unit_price),
   purchased: row.purchased === 'Y' ? 'Y' : 'N',
   notes: row.notes ?? '',
@@ -470,7 +471,7 @@ function migrateLegacyTables() {
         row.expiry_date ?? '',
         quantity,
         row.unit ?? '',
-        'TWD',
+        DEFAULT_CURRENCY,
         unitPrice,
         Number(row.amount ?? quantity * unitPrice),
         row.purchase_place ?? '',
@@ -694,7 +695,7 @@ export default function App() {
           purchaseForm.expiryDate,
           quantity,
           purchaseForm.unit,
-          purchaseForm.currency || 'TWD',
+          purchaseForm.currency || DEFAULT_CURRENCY,
           unitPrice,
           amount,
           purchaseForm.purchasePlace,
@@ -718,7 +719,7 @@ export default function App() {
           purchaseForm.expiryDate,
           quantity,
           purchaseForm.unit,
-          purchaseForm.currency || 'TWD',
+          purchaseForm.currency || DEFAULT_CURRENCY,
           unitPrice,
           amount,
           purchaseForm.purchasePlace,
@@ -887,7 +888,7 @@ export default function App() {
         priceDetailForm.compareNo,
         merchant,
         priceDetailForm.detailDate || shortDate(),
-        priceDetailForm.currency || 'TWD',
+        priceDetailForm.currency || DEFAULT_CURRENCY,
         unitPrice,
         purchased,
         priceDetailForm.notes,
@@ -940,7 +941,7 @@ export default function App() {
           header.photoUri || null,
           header.name,
           purchaseDate,
-          row.currency || 'TWD',
+          row.currency || DEFAULT_CURRENCY,
           row.unitPrice,
           row.unitPrice,
           row.merchant,
@@ -1230,7 +1231,7 @@ export default function App() {
                   `購買日期：${row.purchaseDate}`,
                   row.expiryDate ? `保存期限：${row.expiryDate}` : '',
                   `數量：${qtyText(row.quantity)} ${row.unit} / 已領：${qtyText(row.issueQuantity)}`,
-                  `幣別：${row.currency || 'TWD'} / 單價：${money(row.unitPrice)}`,
+                  `幣別：${row.currency || DEFAULT_CURRENCY} / 單價：${money(row.unitPrice)}`,
                   `小計：${money(row.amount)}`,
                   row.purchasePlace ? `購買地點：${row.purchasePlace}` : '',
                   row.location ? `位置：${row.location}` : '',
@@ -1438,7 +1439,7 @@ export default function App() {
                         alt={index % 2 === 1}
                         lines={[
                           row.detailDate ? `日期：${row.detailDate}` : '',
-                          `幣別：${row.currency || 'TWD'} / 單價：${money(row.unitPrice)}`,
+                          `幣別：${row.currency || DEFAULT_CURRENCY} / 單價：${money(row.unitPrice)}`,
                           row.notes ? `備註：${row.notes}` : '',
                         ]}
                         highlightLine={row.purchased === 'Y' ? '購買否：Y' : ''}
