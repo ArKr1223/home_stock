@@ -128,6 +128,14 @@ tbody tr:hover { background: #fbfdfd; }
 .photo-input:hover { background: #f6fbfb; border-color: var(--primary); }
 .photo-input img { width: 100%; height: 160px; object-fit: cover; }
 .photo-input input { position: absolute; opacity: 0; pointer-events: none; }
+.compare-photo { display: grid; gap: 10px; min-width: 0; }
+.compare-photo-preview { min-height: 110px; display: grid; place-items: center; border: 1px dashed #b9cbd0; border-radius: 5px; overflow: hidden; color: #547079; background: #f6fbfb; }
+.compare-photo-preview img { width: 100%; height: 180px; object-fit: contain; }
+.photo-selection { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; gap: 8px; }
+.photo-selection span { overflow-wrap: anywhere; min-width: 0; font-size: 13px; }
+.photo-options { display: flex; gap: 10px; }
+.photo-options label { cursor: pointer; flex: 1; }
+.form-error { color: #9d2828; background: #fff0ef; border: 1px solid #edb8b4; border-radius: 4px; padding: 10px; margin: 0; font-size: 14px; overflow-wrap: anywhere; }
 .readonly { padding: 13px; display: grid; gap: 4px; background: #f3f7f7; border-left: 3px solid var(--primary); }
 .readonly span { color: var(--muted); font-size: 13px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 9px; padding-top: 5px; }

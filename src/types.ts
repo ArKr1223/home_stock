@@ -88,6 +88,7 @@ export type IssueInput = Pick<Issue, 'purchaseId' | 'issueDate' | 'quantity' | '
 export type PriceHeaderInput = Pick<PriceHeader, 'name' | 'compareDate'> & {
   photoFile?: File | null;
   photoPath?: string | null;
+  firstPrice?: Pick<PriceDetailInput, 'merchant' | 'currency' | 'unitPrice' | 'notes'>;
 };
 
 export type PriceDetailInput = Pick<PriceDetail, 'priceHeaderId' | 'merchant' | 'detailDate' | 'currency' | 'unitPrice' | 'notes'>;

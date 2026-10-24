@@ -160,8 +160,14 @@ export default function App() {
 
     {modal?.kind === 'purchase' ? <Modal title={modal.purchase?.id ? '編輯採購' : '新增物品'} onClose={() => setModal(null)}><PurchaseForm initial={modal.purchase} onCancel={() => setModal(null)} onSubmit={(value) => mutate(() => inventoryRepository.savePurchase({ ...value, name: value.name || modal.purchase?.name || '' }, data.purchases), '採購資料已儲存')} /></Modal> : null}
     {modal?.kind === 'issue' ? <Modal title="新增領用" onClose={() => setModal(null)}><IssueForm purchase={modal.purchase} onCancel={() => setModal(null)} onSubmit={(value) => mutate(() => inventoryRepository.recordIssue(value), '領用完成，庫存已更新')} /></Modal> : null}
-    {modal?.kind === 'compare' ? <Modal title="新增拍照比價" onClose={() => setModal(null)}><CompareForm onCancel={() => setModal(null)} onSubmit={(value) => mutate(() => inventoryRepository.savePriceHeader(value, data.priceHeaders), '比價項目已新增')} /></Modal> : null}
-    {modal?.kind === 'price' ? <Modal title="新增價格明細" onClose={() => setModal(null)}><PriceDetailForm header={modal.header} onCancel={() => setModal(null)} onSubmit={(value) => mutate(() => inventoryRepository.savePriceDetail(value), '價格明細已新增')} /></Modal> : null}
+    {modal?.kind === 'compare' ? <Modal title="新增拍照比價" onClose={() => setModal(null)}><CompareForm onCancel={() => setModal(null)} onSubmit={async (value) => {
+      await inventoryRepository.savePriceHeader(value, data.priceHeaders);
+      setModal(null); setNotice('照片與比價資料已儲存'); await reload();
+    }} /></Modal> : null}
+    {modal?.kind === 'price' ? <Modal title="新增價格明細" onClose={() => setModal(null)}><PriceDetailForm header={modal.header} onCancel={() => setModal(null)} onSubmit={async (value) => {
+      await inventoryRepository.savePriceDetail(value);
+      setModal(null); setNotice('價格明細已新增'); await reload();
+    }} /></Modal> : null}
   </div>;
 }
 

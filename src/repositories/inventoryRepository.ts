@@ -80,7 +80,7 @@ async function uploadPhoto(file: File) {
   const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
   const path = `${userId}/${crypto.randomUUID()}.${extension}`;
   const { error } = await client().storage.from(BUCKET).upload(path, file, { contentType: file.type || 'image/jpeg' });
-  message(error);
+  if (error) throw new Error(`照片上傳失敗：${error.message}`);
   return path;
 }
 
@@ -90,6 +90,8 @@ async function removePhotoIfUnused(path: string | null) {
     client().from('purchases').select('id', { count: 'exact', head: true }).eq('photo_path', path),
     client().from('price_headers').select('id', { count: 'exact', head: true }).eq('photo_path', path),
   ]);
+  message(purchases.error);
+  message(headers.error);
   if (!purchases.count && !headers.count) await client().storage.from(BUCKET).remove([path]);
 }
 
@@ -184,13 +186,35 @@ export const inventoryRepository = {
   },
 
   async savePriceHeader(input: PriceHeaderInput, existing: PriceHeader[]) {
+    if (!input.name.trim()) throw new Error('請輸入物品名稱。');
+    if (input.firstPrice && (!input.firstPrice.merchant.trim() || !Number.isFinite(input.firstPrice.unitPrice) || input.firstPrice.unitPrice < 0)) {
+      throw new Error('請輸入比價地點與有效金額。');
+    }
     const userId = await currentUserId();
     const photoPath = input.photoFile ? await uploadPhoto(input.photoFile) : input.photoPath;
     const compareNo = nextSerial(existing.map((item) => item.compareNo), input.compareDate, 'C');
-    const { error } = await client().from('price_headers').insert({
-      user_id: userId, compare_no: compareNo, name: input.name.trim(), photo_path: photoPath, compare_date: input.compareDate,
+    const id = crypto.randomUUID();
+    const { error: headerError } = await client().from('price_headers').insert({
+      id, user_id: userId, compare_no: compareNo, name: input.name.trim(), photo_path: photoPath, compare_date: input.compareDate,
     });
-    message(error);
+    if (headerError) {
+      // A transport error may follow a committed insert; keep any referenced photo.
+      if (input.photoFile) await removePhotoIfUnused(photoPath ?? null);
+      throw new Error(`比價項目儲存失敗：${headerError.message}`);
+    }
+    if (input.firstPrice) {
+      const { error: detailError } = await client().from('price_details').insert({
+        user_id: userId, price_header_id: id, compare_no: compareNo, merchant: input.firstPrice.merchant.trim(),
+        detail_date: input.compareDate, currency: input.firstPrice.currency.trim() || 'TWD',
+        unit_price: input.firstPrice.unitPrice, notes: input.firstPrice.notes.trim(),
+      });
+      if (detailError) {
+        const { error: cleanupError } = await client().from('price_headers').delete().eq('id', id);
+        if (cleanupError) throw new Error(`金額儲存失敗：${detailError.message}。照片項目已建立，請關閉表單後在該項目補上價格，避免重複新增。`);
+        if (input.photoFile) await removePhotoIfUnused(photoPath ?? null);
+        throw new Error(`比價金額儲存失敗：${detailError.message}，請重試。`);
+      }
+    }
   },
 
   async deletePriceHeader(item: PriceHeader) {

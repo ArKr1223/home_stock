@@ -1,6 +1,7 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { ImagePlus, LoaderCircle } from 'lucide-react';
 import type { IssueInput, PriceDetailInput, PriceHeader, PriceHeaderInput, Purchase, PurchaseInput, StockStatus } from '../types';
+import { PhotoInput } from './PhotoInput';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -57,12 +58,30 @@ export function IssueForm({ purchase, onSubmit, onCancel }: { purchase: Purchase
 
 export function CompareForm({ onSubmit, onCancel }: { onSubmit: (value: PriceHeaderInput) => Promise<void>; onCancel: () => void }) {
   const [form, setForm] = useState<PriceHeaderInput>({ name: '', compareDate: today(), photoFile: null, photoPath: null });
+  const [price, setPrice] = useState({ merchant: '', currency: 'TWD', unitPrice: '', notes: '' });
   const [busy, setBusy] = useState(false);
-  async function submit(event: FormEvent) { event.preventDefault(); setBusy(true); try { await onSubmit(form); } finally { setBusy(false); } }
+  const [error, setError] = useState('');
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (busy) return;
+    if (!form.photoFile) { setError('請先選擇或拍攝比價照片。'); return; }
+    if (!form.name.trim() || !price.merchant.trim() || price.unitPrice === '' || !Number.isFinite(Number(price.unitPrice)) || Number(price.unitPrice) < 0) {
+      setError('請填寫物品名稱、比價地點與有效金額。'); return;
+    }
+    setBusy(true); setError('');
+    try { await onSubmit({ ...form, firstPrice: { ...price, unitPrice: Number(price.unitPrice) } }); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : '比價資料儲存失敗，請重試。'); }
+    finally { setBusy(false); }
+  }
   return <form className="form-grid" onSubmit={submit}>
-    <label className="photo-input span-2"><ImagePlus size={28} /><span>上傳要比價的照片</span><input type="file" accept="image/*" capture="environment" onChange={(event) => setForm({ ...form, photoFile: event.target.files?.[0] ?? null })} /></label>
+    <PhotoInput file={form.photoFile ?? null} onChange={(photoFile) => setForm((current) => ({ ...current, photoFile }))} />
     <Field label="物品名稱" required><input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required /></Field>
     <Field label="比價日期" required><input type="date" value={form.compareDate} onChange={(event) => setForm({ ...form, compareDate: event.target.value })} required /></Field>
+    <Field label="比價地點 / 商家" required className="span-2"><input value={price.merchant} onChange={(event) => setPrice({ ...price, merchant: event.target.value })} required /></Field>
+    <Field label="幣別"><input value={price.currency} onChange={(event) => setPrice({ ...price, currency: event.target.value })} /></Field>
+    <Field label="比價金額" required><input type="number" inputMode="decimal" min="0" step="0.01" value={price.unitPrice} onChange={(event) => setPrice({ ...price, unitPrice: event.target.value })} required /></Field>
+    <Field label="備註" className="span-2"><textarea rows={3} value={price.notes} onChange={(event) => setPrice({ ...price, notes: event.target.value })} /></Field>
+    {error ? <p className="form-error span-2" role="alert">{error}</p> : null}
     <FormActions busy={busy} onCancel={onCancel} />
   </form>;
 }
@@ -70,14 +89,16 @@ export function CompareForm({ onSubmit, onCancel }: { onSubmit: (value: PriceHea
 export function PriceDetailForm({ header, onSubmit, onCancel }: { header: PriceHeader; onSubmit: (value: PriceDetailInput) => Promise<void>; onCancel: () => void }) {
   const [form, setForm] = useState<PriceDetailInput>({ priceHeaderId: header.id, merchant: '', detailDate: today(), currency: 'TWD', unitPrice: 0, notes: '' });
   const [busy, setBusy] = useState(false);
-  async function submit(event: FormEvent) { event.preventDefault(); setBusy(true); try { await onSubmit(form); } finally { setBusy(false); } }
+  const [error, setError] = useState('');
+  async function submit(event: FormEvent) { event.preventDefault(); setBusy(true); setError(''); try { await onSubmit(form); } catch (cause) { setError(cause instanceof Error ? cause.message : '價格明細儲存失敗'); } finally { setBusy(false); } }
   return <form className="form-grid" onSubmit={submit}>
     <div className="readonly span-2"><strong>{header.name}</strong><span>比價單號 {header.compareNo}</span></div>
-    <Field label="商家" required><input value={form.merchant} onChange={(event) => setForm({ ...form, merchant: event.target.value })} required /></Field>
+    <Field label="比價地點 / 商家" required><input value={form.merchant} onChange={(event) => setForm({ ...form, merchant: event.target.value })} required /></Field>
     <Field label="日期" required><input type="date" value={form.detailDate} onChange={(event) => setForm({ ...form, detailDate: event.target.value })} required /></Field>
     <Field label="幣別"><input value={form.currency} onChange={(event) => setForm({ ...form, currency: event.target.value })} /></Field>
-    <Field label="單價" required><input type="number" min="0" step="0.01" value={form.unitPrice} onChange={(event) => setForm({ ...form, unitPrice: Number(event.target.value) })} required /></Field>
+    <Field label="比價金額" required><input type="number" inputMode="decimal" min="0" step="0.01" value={form.unitPrice} onChange={(event) => setForm({ ...form, unitPrice: Number(event.target.value) })} required /></Field>
     <Field label="備註" className="span-2"><textarea rows={3} value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} /></Field>
+    {error ? <p className="form-error span-2" role="alert">{error}</p> : null}
     <FormActions busy={busy} onCancel={onCancel} />
   </form>;
 }
