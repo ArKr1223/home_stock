@@ -8,11 +8,12 @@ import { AuthScreen } from './components/AuthScreen';
 import { CompareForm, IssueForm, PriceDetailForm, PurchaseForm } from './components/Forms';
 import { Modal } from './components/Modal';
 import { MultiFilter } from './components/MultiFilter';
+import { InventoryDetail } from './components/InventoryDetail';
 import { buildInventorySummary, matchesSearch, statusLabel } from './lib/inventory';
 import { demoData } from './lib/demoData';
 import { isSupabaseConfigured } from './lib/supabase';
 import { inventoryRepository } from './repositories/inventoryRepository';
-import { EMPTY_DATA, type InventoryData, type PriceHeader, type Purchase } from './types';
+import { EMPTY_DATA, type InventoryData, type InventoryItem, type PriceHeader, type Purchase } from './types';
 
 type Tab = 'inventory' | 'purchases' | 'issues' | 'compare';
 type ModalState =
@@ -42,6 +43,7 @@ export default function App() {
   const [locationFilter, setLocationFilter] = useState(new Set<string>());
   const [statusFilter, setStatusFilter] = useState(new Set<string>());
   const [modal, setModal] = useState<ModalState>(null);
+  const [selectedInventoryItem, setSelectedInventoryItem] = useState<InventoryItem | null>(null);
   const [notice, setNotice] = useState('');
   const [navOpen, setNavOpen] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
@@ -139,7 +141,7 @@ export default function App() {
           <MultiFilter label="狀態" values={statuses} selected={statusFilter} onChange={setStatusFilter} />
         </div>
         <SummaryBar inventory={inventory} />
-        <InventoryTable items={filteredInventory} loading={loading} onAdd={(name) => setModal({ kind: 'purchase', purchase: seedPurchase(name) })} onDelete={(name) => {
+        <InventoryTable items={filteredInventory} loading={loading} onOpen={setSelectedInventoryItem} onAdd={(name) => setModal({ kind: 'purchase', purchase: seedPurchase(name) })} onDelete={(name) => {
           if (window.confirm(`確定刪除「${name}」的所有採購與領用紀錄？`)) void mutate(() => inventoryRepository.deleteInventoryItem(name), '物品已刪除');
         }} />
       </> : null}
@@ -157,6 +159,8 @@ export default function App() {
         if (window.confirm(`確定刪除「${header.name}」的比價紀錄？`)) void mutate(() => inventoryRepository.deletePriceHeader(header), '比價紀錄已刪除');
       }} onDeleteDetail={(id) => void mutate(() => inventoryRepository.deletePriceDetail(id), '價格明細已刪除')} onPurchase={(id) => void mutate(() => inventoryRepository.purchaseFromPrice(id, '', data.purchases), '已從比價明細建立採購')} /> : null}
     </main>
+
+    {selectedInventoryItem ? <InventoryDetail item={selectedInventoryItem} purchases={data.purchases} onClose={() => setSelectedInventoryItem(null)} /> : null}
 
     {modal?.kind === 'purchase' ? <Modal title={modal.purchase?.id ? '編輯採購' : '新增物品'} onClose={() => setModal(null)}><PurchaseForm initial={modal.purchase} onCancel={() => setModal(null)} onSubmit={(value) => mutate(() => inventoryRepository.savePurchase({ ...value, name: value.name || modal.purchase?.name || '' }, data.purchases), '採購資料已儲存')} /></Modal> : null}
     {modal?.kind === 'issue' ? <Modal title="新增領用" onClose={() => setModal(null)}><IssueForm purchase={modal.purchase} onCancel={() => setModal(null)} onSubmit={(value) => mutate(() => inventoryRepository.recordIssue(value), '領用完成，庫存已更新')} /></Modal> : null}
@@ -183,13 +187,13 @@ function SummaryBar({ inventory }: { inventory: ReturnType<typeof buildInventory
   return <div className="summary-bar"><div><Boxes /><span>全部物品<strong>{total}</strong></span></div><div><Archive /><span>數量不足<strong>{low}</strong></span></div><div><CircleDollarSign /><span>30 天內到期<strong>{expiring}</strong></span></div><div className="danger"><PackageOpen /><span>已過期<strong>{expired}</strong></span></div></div>;
 }
 
-function InventoryTable({ items, loading, onAdd, onDelete }: { items: ReturnType<typeof buildInventorySummary>; loading: boolean; onAdd: (name: string) => void; onDelete: (name: string) => void }) {
+function InventoryTable({ items, loading, onOpen, onAdd, onDelete }: { items: ReturnType<typeof buildInventorySummary>; loading: boolean; onOpen: (item: InventoryItem) => void; onAdd: (name: string) => void; onDelete: (name: string) => void }) {
   return <TableFrame loading={loading} empty={!items.length} emptyText="找不到符合條件的庫存">
-    <table><thead><tr><th>物品</th><th>分類 / 品牌</th><th>庫存</th><th>位置</th><th>最近效期</th><th>狀態</th><th><span className="sr-only">操作</span></th></tr></thead><tbody>{items.map((item) => <tr key={item.name}>
-      <td data-label="物品"><div className="item-cell"><Photo src={item.photoUrl} /><div><strong>{item.name}</strong><small>{item.notes || '無備註'}</small></div></div></td>
+    <table><thead><tr><th>物品</th><th>分類 / 品牌</th><th>庫存</th><th>位置</th><th>最近效期</th><th>狀態</th><th><span className="sr-only">操作</span></th></tr></thead><tbody>{items.map((item) => <tr className="inventory-row" key={item.name} onClick={() => onOpen(item)}>
+      <td data-label="物品"><button type="button" className="item-cell inventory-open" aria-label={`查看 ${item.name} 商品詳情`} onClick={(event) => { event.stopPropagation(); onOpen(item); }}><Photo src={item.photoUrl} /><span><strong>{item.name}</strong><small>{item.notes || '無備註'}</small></span></button></td>
       <td data-label="分類 / 品牌">{[item.category, item.brand].filter(Boolean).join(' / ') || '—'}</td><td data-label="庫存"><strong>{formatNumber(item.quantity)}</strong> {item.unit}</td>
       <td data-label="位置">{item.location || '—'}</td><td data-label="最近效期">{item.expiryDate || '—'}</td><td data-label="狀態"><Status value={item.status} /></td>
-      <td className="row-actions"><button className="icon-button" title="新增同名採購" onClick={() => onAdd(item.name)}><Plus size={17} /></button><button className="icon-button danger" title="刪除物品" onClick={() => onDelete(item.name)}><Trash2 size={17} /></button></td>
+      <td className="row-actions" onClick={(event) => event.stopPropagation()}><button className="icon-button" title="新增同名採購" onClick={() => onAdd(item.name)}><Plus size={17} /></button><button className="icon-button danger" title="刪除物品" onClick={() => onDelete(item.name)}><Trash2 size={17} /></button></td>
     </tr>)}</tbody></table>
   </TableFrame>;
 }

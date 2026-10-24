@@ -84,6 +84,48 @@ tbody tr:hover { background: #fbfdfd; }
 .photo { width: 46px; height: 46px; object-fit: cover; border-radius: 5px; border: 1px solid var(--line); background: #eef3f4; flex: 0 0 auto; }
 .photo.large { width: 62px; height: 62px; }
 .photo.placeholder { display: grid; place-items: center; color: #779097; }
+.inventory-row { cursor: pointer; }
+.inventory-open { width: 100%; border: 0; padding: 0; text-align: left; color: inherit; background: transparent; }
+.inventory-open > span { min-width: 0; }
+.inventory-open:hover strong { color: var(--primary); text-decoration: underline; }
+.inventory-detail { padding: 0; width: min(860px, calc(100vw - 48px)); max-width: none; max-height: calc(100dvh - 48px); border: 1px solid var(--line); border-radius: 7px; color: #17252d; background: white; overflow: auto; }
+.inventory-detail::backdrop { background: rgba(20, 34, 41, .48); }
+.detail-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 22px; position: sticky; top: 0; z-index: 1; background: white; border-bottom: 1px solid var(--line); }
+.detail-header h2 { margin: 0; font-size: 21px; overflow-wrap: anywhere; }
+.detail-content { padding: 22px; }
+.detail-overview { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 24px; align-items: start; }
+.detail-photo { position: relative; display: grid; place-items: center; gap: 10px; width: 100%; aspect-ratio: 1; padding: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: #f4f7f8; color: var(--muted); }
+button.detail-photo { cursor: zoom-in; }
+.detail-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.photo-expand-icon { position: absolute; right: 8px; bottom: 8px; background: white; border-radius: 4px; box-sizing: content-box; padding: 6px; }
+.no-photo { align-content: center; font-size: 14px; }
+.detail-fields { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.detail-fields dt { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.detail-fields dd { font-size: 14px; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail-batches { margin-top: 26px; }
+.detail-batches h3 { font-size: 16px; margin: 0 0 12px; }
+.detail-batches h3 span { color: var(--muted); margin-left: 6px; font-size: 13px; }
+.detail-batch { padding: 16px 0; border-top: 1px solid var(--line); }
+.detail-batch-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 15px; font-size: 14px; }
+.batch-photo-button { display: flex; align-items: center; gap: 8px; border: 0; background: transparent; color: var(--primary); cursor: zoom-in; }
+.batch-photo-button img { width: 42px; height: 42px; object-fit: cover; border-radius: 4px; }
+.batch-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.photo-lightbox { position: fixed; inset: 0; margin: 0; padding: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; border: 0; border-radius: 0; background: #111719; color: white; overflow: hidden; }
+.photo-lightbox::backdrop { background: #111719; }
+.photo-lightbox[open] { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.photo-lightbox header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: max(12px, env(safe-area-inset-top)) 18px 12px; }
+.photo-lightbox header span { overflow-wrap: anywhere; min-width: 0; }
+.photo-lightbox .icon-button { color: white; width: 44px; height: 44px; }
+.photo-lightbox .icon-button:hover { background: #344247; }
+.photo-lightbox > img { width: 100%; height: 100%; min-height: 0; object-fit: contain; padding: 0 12px max(12px, env(safe-area-inset-bottom)); }
+@media (max-width: 640px) {
+  .inventory-detail { width: 100vw; max-height: 100dvh; height: 100dvh; margin: 0; border-radius: 0; border: 0; }
+  .detail-header { padding: 12px 16px; }
+  .detail-content { padding: 16px; }
+  .detail-overview { grid-template-columns: 1fr; gap: 20px; }
+  .detail-photo { max-height: 280px; aspect-ratio: 4 / 3; }
+  .batch-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .row-actions { display: flex; justify-content: flex-end; gap: 3px; white-space: nowrap; }
 .status { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; font-weight: 700; }
 .status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #3dac6b; }
